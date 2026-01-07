@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guess Number Game</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to right, #141e30, #243b55);
+        color: white;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .card {
+        max-width: 400px;
+        margin: auto;
+        background: rgba(255,255,255,0.1);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+
+    input {
+        width: 90%;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: none;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 25px;
+        background: #4CAF50;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #43a047;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    #message {
+        font-size: 20px;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+
+    .success {
+        color: #00ff99;
+    }
+
+    .error {
+        color: #ff4c4c;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="card" id="screen1">
+    <h2>🎯 Guess The Number</h2>
+    <input type="text" id="username" placeholder="Enter your name">
+    <button onclick="startGame()">Start Game</button>
+
+</div>
+
+<div class="card hidden" id="screen2">
+    <h2 id="welcome"></h2>
+    <input type="number" id="low" placeholder="Smallest number">
+    <input type="number" id="high" placeholder="Largest number">
+    <button onclick="setRange()">Continue</button>
+</div>
+
+<div class="card hidden" id="screen3">
+    <h2>Guess the Number</h2>
+    <input type="number" id="guess" placeholder="Enter your guess">
+    <button onclick="checkGuess()">Submit Guess</button>
+
+    <div id="message"></div>
+
+    <button id="restartBtn" class="hidden" onclick="restartGame()">
+        🔄 Play Again
+    </button>
+</div>
+
+<!-- Sounds -->
+<audio id="correctSound">
+    <source src="correct.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="wrongSound">
+    <source src="wrong.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+    let username, low, high, randomNum, attempts = 0;
+function speak(text) {
+    let speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "en-US";
+    speech.rate = 1;
+    speech.pitch = 1;
+    window.speechSynthesis.cancel(); // stop previous speech
+    window.speechSynthesis.speak(speech);
+}
+
+function restartGame() {
+    // Reset variables
+    attempts = 0;
+    randomNum = null;
+    low = null;
+    high = null;
+
+    // Clear inputs
+    document.getElementById("username").value = "";
+    document.getElementById("low").value = "";
+    document.getElementById("high").value = "";
+    document.getElementById("guess").value = "";
+    document.getElementById("message").innerText = "";
+
+    // Hide screens
+    document.getElementById("screen2").classList.add("hidden");
+    document.getElementById("screen3").classList.add("hidden");
+
+    // Hide restart button
+    document.getElementById("restartBtn").classList.add("hidden");
+
+    // Show start screen
+    document.getElementById("screen1").classList.remove("hidden");
+
+    speak("Game restarted. Please enter your name to start again");
+}
+       
+
+
+    function startGame() {
+        username = document.getElementById("username").value.trim();
+        if (username === "") {
+            alert("Please enter your name");
+            speak("Please enter your name to start the game");
+            return;
+        }
+
+        document.getElementById("screen1").classList.add("hidden");
+        document.getElementById("screen2").classList.remove("hidden");
+        document.getElementById("welcome").innerText = `Welcome ${username}!`;
+                speak(`Welcome ${username}, Select your Highest and lowest number.`);
+
+     }
+
+    function setRange() {
+
+        low = Number(document.getElementById("low").value);
+        high = Number(document.getElementById("high").value);
+                speak(`${username}, gues your number between ${low} and ${high}`);
+
+        if (isNaN(low) || isNaN(high) || high <= low) {
+            alert("Please enter a valid number range");
+            return;
+        }
+
+        randomNum = Math.floor(Math.random() * (high - low + 1)) + low;
+
+        document.getElementById("screen2").classList.add("hidden");
+        document.getElementById("screen3").classList.remove("hidden");
+    }
+
+    function checkGuess() {
+        let guess = Number(document.getElementById("guess").value);
+        let message = document.getElementById("message");
+
+        if (isNaN(guess)) {
+            alert("Enter a valid number");
+            return;
+        }
+
+        attempts++;
+
+        if (guess === randomNum) {
+    message.innerText = `🎉 Correct! It took you ${attempts} attempts`;
+    message.className = "success";
+
+    document.getElementById("correctSound").play();
+    navigator.vibrate([200, 100, 200]);
+
+    // Show restart button
+    document.getElementById("restartBtn").classList.remove("hidden");
+
+    speak(`Congratulations ${username},It took you ${attempts} attempts to gues correct number.`);
+}else {
+            message.innerText = guess > randomNum ? "❌ Too High!" : "❌ Too Low!";
+            message.className = "error";
+            document.getElementById("wrongSound").play();
+            navigator.vibrate(300);
+        }
+    }
+</script>
+
+</body>
+</html>
